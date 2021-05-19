@@ -12,6 +12,7 @@
     Build the docker file :
     (download the source code here from github)
     (navigate to the Dockerfile location in MOVILAN/)
+    
     sudo nvidia-docker build -t homagni/vision_language:latest .
 
     OR

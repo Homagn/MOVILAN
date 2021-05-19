@@ -2,7 +2,7 @@
 
 0. Get familiarized with concepts:
 (paper here: https://arxiv.org/abs/2101.07891)
-(explanation slide included with the source code)
+(explanation slide here: https://github.com/Homagn/MOVILAN/blob/main/MOVILAN_detailed_explanation.pptx)
 
 1. First set up the docker in your system
 if you dont have nvidia-docker then follow instructions :

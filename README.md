@@ -40,17 +40,23 @@
 
 
 4. Run the docker instance
+
     (in a terminal in linux)
+    
     xhost +
 
     (after this in a newline)
+    
     (NOTE- replace /home/homagni/Desktop/MOVILAN/ with the location where you have downloaded the source code)
 
     sudo nvidia-docker run --rm -ti --mount type=bind,source=/home/homagni/Desktop/MOVILAN/,target=/ai2thor --net=host --ipc=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --env="QT_X11_NO_MITSHM=1" homagni/vision_language
 
     (Now youll be inside the terminal of the docker instance)
+    
     (run the test code)
+    
     cd /ai2thor
+    
     python3 main.py
 
     (it should open up an ai2thor instance and run an execution of our algorithm for an instruction in ALFRED dataset)

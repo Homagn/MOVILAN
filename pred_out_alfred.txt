@@ -1,0 +1,4 @@
+<navigation> -> [turn:action_navi] [around:action_desc] and [walk:action_navi] [towards:action_desc] the [bean:target_obj] [bag:target_obj] on the floor
+<n_navigation> -> [pick:action_n_navi] [up:action_desc] the [basketball:target_obj] from the floor
+<navigation> -> [turn:action_navi] [around:action_desc] and [walk:action_navi] [towards:action_desc] the [dresser:target_obj]
+<n_navigation> -> turn [on:action_n_navi] the [lamp:target_obj] that is [on:refinement_rel] the [dresser:refinement_obj]

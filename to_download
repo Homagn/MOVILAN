@@ -1,0 +1,6 @@
+language_understanding/alfred_model_1000_modification
+mapper/data
+mapper/nn_weights
+cross_modal/unet_weights.pth
+cross_modal/prehash.npy
+cross_modal/data/descriptions.json

@@ -26,11 +26,17 @@
     download the zip file, after that extract the contents to your source MOVILAN/ folder like this 
     
     alfred_model_1000_modification -> language_understanding/alfred_model_1000_modification
+    
     data -> mapper/data
+    
     nn_weights -> mapper/nn_weights
+    
     unet_weights.pth -> cross_modal/unet_weights.pth
+    
     prehash.npy -> cross_modal/prehash.npy
+    
     descriptions.json -> cross_modal/data/descriptions.json
+    
 
 
 4. Run the docker instance

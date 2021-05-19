@@ -16,7 +16,8 @@
 
     OR
 
-    Pull the prebuilt docker image
+    Pull the prebuilt docker image like this:
+    
     docker pull homagni/vision_language:latest
 
 3. Download the necessary model weights and data

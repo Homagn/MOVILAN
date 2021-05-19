@@ -1,0 +1,10 @@
+Data generation-> datagen.py
+
+Training -> unet_ling.py
+
+Inference -> cross_modal_grounding.py (a very simple sample demonstration- can point to an image and set your own language inside the code)
+
+
+
+Before training always use the datagen.py to generate your own data. The data will be generated in data/rgb/, data/seg/ and data/descriptions.json
+some examples are included in data/rgb/ and data/seg/

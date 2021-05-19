@@ -1,0 +1,50 @@
+action_n_navi action_desc O target_obj
+action_navi action_desc O action_navi action_desc O O target_attri target_obj
+action_n_navi O target_obj refinement_rel O refinement_obj O O O O O
+action_navi action_desc O action_navi O O target_obj
+action_n_navi O refinement_rel refinement_rel refinement_obj O action_n_navi action_desc O target_obj
+action_navi O action_intensity action_desc O O target_obj
+action_n_navi O target_obj refinement_rel O O refinement_rel refinement_rel O O refinement_obj
+action_navi action_desc O action_navi O O target_obj O target_rel O
+action_n_navi O target_obj O O refinement_rel refinement_obj O O refinement_obj
+action_navi action_desc O action_navi action_desc O O target_obj
+action_n_navi O target_obj O O O refinement_rel refinement_rel O O refinement_obj
+action_navi O O target_obj O O refinement_rel O O refinement_obj
+action_n_navi action_desc O target_obj refinement_rel O refinement_obj
+action_navi O O target_attri target_obj O O O O O O O
+action_n_navi O target_obj refinement_rel O O refinement_rel refinement_obj
+action_navi O O O target_obj O O refinement_rel O O refinement_obj
+action_n_navi O refinement_obj O action_n_navi action_desc O target_obj O refinement_rel O action_n_navi O refinement_obj
+action_navi O O target_attri target_obj O O O O O O O O
+action_n_navi O target_obj refinement_rel O O refinement_rel O refinement_rel O refinement_obj
+action_navi O O action_desc O action_navi O O target_obj
+action_n_navi action_desc O target_attri target_obj refinement_rel O refinement_obj
+action_navi O O action_desc action_navi O action_intensity action_intensity action_navi O O action_desc target_rel O target_obj
+action_n_navi O target_obj refinement_rel O O refinement_obj
+action_navi O O action_desc action_navi O O target_obj action_navi O O action_desc
+action_n_navi action_desc O target_attri target_obj refinement_rel O refinement_obj
+action_navi O O action_desc action_navi O action_intensity action_intensity action_navi O O action_desc target_rel O target_obj
+action_n_navi O target_obj refinement_rel O O refinement_obj
+action_navi action_desc O O target_rel O O target_obj
+action_n_navi action_desc O target_obj refinement_rel O refinement_obj
+action_n_navi O target_obj action_desc O O refinement_rel O O refinement_obj
+action_n_navi O target_obj refinement_rel O refinement_obj O O O O O action_n_navi
+action_n_navi O target_obj refinement_rel O refinement_obj O O refinement_rel O O refinement_obj
+action_n_navi O target_obj refinement_rel O refinement_obj
+action_navi action_desc O action_intensity action_intensity O O action_desc action_desc O target_obj refinement_rel O refinement_obj
+action_n_navi action_desc O target_obj O target_obj
+action_navi action_desc O action_navi action_desc O O target_obj
+action_n_navi O target_obj refinement_rel O refinement_obj O O refinement_rel O O refinement_obj action_n_navi O refinement_obj O O O O O action_n_navi O target_obj action_desc O
+action_navi action_desc O action_navi O O O O O target_obj
+action_n_navi O target_obj refinement_rel O refinement_obj O refinement_rel O O refinement_obj
+action_navi O target_rel O target_attri target_obj O O agent_dir
+action_n_navi action_desc O target_obj refinement_rel O refinement_attri refinement_obj
+action_navi action_desc O action_navi O O target_obj O O agent_dir
+action_n_navi O target_obj refinement_rel O refinement_obj O O refinement_rel O O refinement_obj
+action_n_navi action_desc O target_obj refinement_rel O refinement_obj
+action_navi O O target_rel O O O target_obj O O agent_dir O
+action_n_navi O target_obj action_desc refinement_rel O refinement_rel O O O refinement_obj
+action_navi O O target_attri target_attri target_obj
+action_n_navi O target_obj refinement_rel O refinement_obj
+action_n_navi O target_obj action_navi action_desc O action_navi O O target_obj refinement_rel O O refinement_obj
+O action_n_navi O target_obj

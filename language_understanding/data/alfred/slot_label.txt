@@ -1,0 +1,14 @@
+PAD
+UNK
+O
+action_navi
+action_n_navi
+action_desc
+action_intensity
+target_obj
+target_rel
+refinement_obj
+refinement_rel
+refinement_attri
+target_attri
+agent_dir

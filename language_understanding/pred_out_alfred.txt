@@ -1,0 +1,1 @@
+<navigation> -> [walk:action_navi] [over:action_desc] to the [table:target_obj] and [bring:action_n_navi] the [apple:target_obj]

@@ -1,3 +1,5 @@
+![Alt text](relative/path/to/img.jpg?raw=true "Title")
+
 0. Get familiarized with concepts:
 (paper here: https://arxiv.org/abs/2101.07891)
 (explanation slide included with the source code)

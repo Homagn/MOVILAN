@@ -68,3 +68,5 @@ https://github.com/mviereck/x11docker/issues/186
 and
 (probably the last instruction of this)
 https://github.com/stas-pavlov/azure-glx-rendering
+
+https://unix.stackexchange.com/questions/403424/x11-forwarding-from-a-docker-container-in-remote-server

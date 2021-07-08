@@ -70,3 +70,10 @@ and
 https://github.com/stas-pavlov/azure-glx-rendering
 
 https://unix.stackexchange.com/questions/403424/x11-forwarding-from-a-docker-container-in-remote-server
+
+
+using the --privileged flag as in here
+
+(https://answers.ros.org/question/301056/ros2-rviz-in-docker-container/)
+
+is able to make gazebo work with display from docker in azure cloud

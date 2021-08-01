@@ -62,6 +62,18 @@
     (it should open up an ai2thor instance and run an execution of our algorithm for an instruction in ALFRED dataset)
 
 
+
+
+EXTRA NOTES:
+
+In mapper/params.py you can change debug_viz= True or false depending on whether you want to see the internal map state of the robot
+
+The code creates a lot of log outputs depicting the various stages of decision making to make a log you can try
+
+python3 main.py > SomeFile.txt 
+
+
+
 (ERRORS ?)
 If the display is not opening up from the docker instance (if youre using linux azure VM and docker from inside it)
 https://github.com/mviereck/x11docker/issues/186

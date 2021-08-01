@@ -524,7 +524,7 @@ def run(env, sentences, intents, slot_dicts, ground_truth_map = -1):
         traceback.print_exc()
         task_tracker["goal_satisfied"] = 0
         task_tracker["subgoal_idx"] = -1
-        task_tracker["post_conditions"] = 0
+        task_tracker["post_conditions"] = env.get_postconditions_met()
         task_tracker["trajectory_length"] = -1
         return task_tracker
 

@@ -485,7 +485,7 @@ def run(env, sentences, intents, slot_dicts, ground_truth_map = -1):
 
 
             exp_length = get_demo_traj_length(env.rn, env.task_index, env.trial_num) #they sould be set earlier in main file
-            
+            task_tracker["exp_length"] = exp_length
 
             print("Expert trajectory length ",exp_length)
             print("Algorithm trajectory length ",alg_length)

@@ -6,7 +6,8 @@ import os
 os.environ['MAIN'] = '/ai2thor'
 sys.path.append(os.path.join(os.environ['MAIN']))
 
-
+import planner.low_level_planner.visibility_check as visibility_check
+target_visible = visibility_check.target_visible
 
 def random_explore(env, targ_obj, localize_params):
     print("(exploration.py -> random_explore)")

@@ -7,12 +7,16 @@ os.environ['MAIN'] = '/ai2thor'
 sys.path.append(os.path.join(os.environ['MAIN']))
 
 from mapper import test_gcn
-
+from planner.low_level_planner import move_camera
 
 
 def occupancy_grid(target_object, localize_params, hallucinate = [0,0]): #displays the true map of the environment around the agent for a focussed object + floor
     print("(grid_planning.py -> occupancy_grid)")
     labeled_grid = test_gcn.estimate_map(target_object,localize_params = localize_params)
+    
+    #without map the agent spirals the camera upward to capture an image so reset the camera position
+    if isinstance(localize_params['room'],int)==False:
+        move_camera.set_default_tilt(localize_params['room'])
     
     if hallucinate[0]!=0 or hallucinate[1]!=0: 
         print("Target is visible, but too far away for depth sensor, halucinating the position")

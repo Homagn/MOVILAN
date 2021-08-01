@@ -2,6 +2,7 @@ import os
 import sys
 import copy
 import numpy as np
+import random
 
 os.environ['MAIN'] = '/ai2thor'
 sys.path.append(os.path.join(os.environ['MAIN']))
@@ -171,7 +172,8 @@ def Random_nudge(env,nav,si,sj):
             print(" ")
         '''
 
-        nav = mark_movement(nav, si, sj, rn, event, mark = 0)
+        #nav = mark_movement(nav, si, sj, rn, event, mark = 0)
+        nav = mark_movement(nav, si, sj, rn, env, mark = 0)
     
     if env.actuator_success():
         #rollback
@@ -186,7 +188,8 @@ def Random_nudge(env,nav,si,sj):
             rb = "MoveRight"
         env.step(dict({"action": rb, "moveMagnitude" : 0.25}))
 
-        nav = mark_movement(nav, si, sj, rn, event, mark = 1) #first rollback then mark
+        #nav = mark_movement(nav, si, sj, rn, event, mark = 1) #first rollback then mark
+        nav = mark_movement(nav, si, sj, rn, env, mark = 1) #first rollback then mark
         
     return env,nav
 
@@ -269,10 +272,12 @@ def search(nav, facing_positions, env, tar_object, localize_params, notarget = T
                 env,nav = Random_nudge(env,nav,si,sj)
                 
                 if notarget and c2c_dist>4: #center to center distance greater than 2 grids/ earlier code notarget = True means view_v_params = {}
+                #if c2c_dist>4: #center to center distance greater than 2 grids/ earlier code notarget = True means view_v_params = {}
                     env = ns.unit_refinement(env, tar_object)
                     
                     nav, facing_positions = ns.occupancy_grid(tar_object, localize_params)
                     return search(nav, facing_positions, env, tar_object, localize_params, notarget = False, numtries = numtries+1, other_side = other_side) #enter next recursion stage
+                    #return search(nav, facing_positions, env, tar_object, localize_params, numtries = numtries+1, other_side = other_side) #enter next recursion stage
         
         print("Failed to find a path to the object after several tries ")
         return env

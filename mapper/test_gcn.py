@@ -265,7 +265,9 @@ class graph_conv_mapper(object):
         #nav_map is an array of params.grid_size x params.grid_size x 4 (4 classes unk,flr,tar and obs)| contains values between 0 and 1
         
         self.nav_map = nav_map
-        
+        if params.debug_viz:
+            print("mapper/test_gcn.py line 268 visualizing input to GCN")
+            proj.prettyprint(self.nav_map,argmax = True) #it cant print without argmax because each element of nav_map is 4 dimensional
 
 
 
@@ -303,6 +305,9 @@ class graph_conv_mapper(object):
         self.add_inputs(room, pos, target_object)
         self.ng.test_once(motion) #should be called only after add_inputs function
         infer_proj = self.ng.vis_matrix() #32x32 numpy matrix contains 10 where target, 1 where floor, and 0 where obstacle/unmap
+        if params.debug_viz:
+            print("mapper/test_gcn.py line 306, visualizing GCN prediction map")
+            proj.starviz(infer_proj)
         return infer_proj
 
     def aggregate_belief(self,room,pos, target_object, motion, var = 0, thresh = 1.0):
@@ -369,7 +374,7 @@ def estimate_map(target_object, localize_params = {'room':304,'position':[0.75, 
         a,b = int((pos[0]-o_grids['min_pos']['mx'])/0.25), int((pos[1]-o_grids['min_pos']['mz'])/0.25)
         print("Ground truth accessible- Obtained agent standing grid pos ",a,b)
         
-
+        #print("available keys ",o_grids.keys())
         nav_map_t = gtm.target_navigation_map(  o_grids, target_object, 
                                                 {'x':a*0.25+ o_grids['min_pos']['mx'], 'y':0.0, 'z': b*0.25+ o_grids['min_pos']['mz']}, 
                                                 grid_size = gcm.grid_size, 
@@ -378,6 +383,9 @@ def estimate_map(target_object, localize_params = {'room':304,'position':[0.75, 
                                                 tar_id = params.semantic_classes['tar'], 
                                                 obs_id = params.semantic_classes['obs'])
         #a,c = localize_params['position'][0], localize_params['position'][1] #task 2 / agents 3D position can be obtained by running datagen.py --room <> --task <> --checkpan 
+        if params.debug_viz:
+            print("mapper/test_gcn.py line 384, visualizing ground truth map")
+            proj.starviz(nav_map_t)
         return nav_map_t
 
     motion = [0,0]

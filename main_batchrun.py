@@ -4,7 +4,7 @@ from os import path
 import sys
 from argparse import Namespace
 import json
-
+import csv
 
 os.environ['LU'] = 'language_understanding'
 sys.path.append(os.path.join(os.environ['LU']))
@@ -26,6 +26,16 @@ from language_understanding import instruction_parser as ip
 from planner import high_level_planner as hlp
 
 
+#function for writing csv files 
+def writelog(fname, values):
+    file1 = open(fname, 'a')
+    writer = csv.writer(file1)
+    fields1=values #is a list
+    writer.writerow(fields1)
+    file1.close()
+
+
+
 print("------------- Welcome to the MOVILAN execution environment -------------")
 
 #================= Parameters ==========================
@@ -45,16 +55,11 @@ args = {'data_path':'robot/data', 'num_threads':1, 'reward_config':'robot/data/c
 task_args = Namespace(**args)
 env = sensing()
 
-gc_alg=[]
-gc_all=[]
 
 for i1 in rooms:
-    success_log = {i1:{}}
     for i2 in task_idcs:
-        success_log[i1] = {i2:{}}
         for i3 in trial_nums:
-            success_log[i1][i2] = {i3:{}}
-            
+
             try:
                 env.prepare_navigation_environment(room = int(i1), task_index = int(i2), trial_num = int(i3))
                 env.set_task(task_completion_arguments = task_args)
@@ -83,20 +88,45 @@ for i1 in rooms:
                 print(" ")
 
             if inp=='y':
-                success_log[i1][i2][i3] = hlp.run(env,sentences,list_intent,list_dic_parsing,int(i1))
+                task_tracker = hlp.run(env,sentences,list_intent,list_dic_parsing,int(i1))
             else:
-                success_log[i1][i2][i3] = hlp.run(env,sentences,list_intent,list_dic_parsing)
+                task_tracker = hlp.run(env,sentences,list_intent,list_dic_parsing)
 
             print("\n\n\n\n")
-            gc_alg.append(success_log[i1][i2][i3]["post_conditions"][0])
-            gc_all.append(success_log[i1][i2][i3]["post_conditions"][1])
+            
 
-            #Write down the success log file 
-            success_log["list_gc_alg"] = gc_alg
-            success_log["list_gc_all"] = gc_all
 
-            with open("success_log.json", "w") as write_file:
-                json.dump(success_log, write_file, indent=4)
+            #logging csv file for benchmark
+            
+            values = ["Room number ",i1,"Task number ",i2, "Trial number ", i3, "Goals satisfied (0/1) "]
+            if task_tracker["goal_satisfied"]== True:
+                values.append(1)
+            else:
+                values.append(0)
+            values.append("subgoal idx")
+            values.append(task_tracker["subgoal_idx"])
+            values.append(task_tracker["post_conditions"][0])
+            values.append("out of")
+            values.append(task_tracker["post_conditions"][1])
+            values.append("number of instructions ")
+            values.append(len(task_tracker["task"]))
+
+            values.append("Algo path length ")
+            values.append(task_tracker["trajectory_length"])
+
+
+            exp_length = task_tracker["exp_length"]
+
+            values.append("Expert path length ")
+            values.append(exp_length)
+
+            values.append("ratio")
+            #r = float(task_tracker["trajectory_length"])/float(max(task_tracker["trajectory_length"], exp_length))
+            r = float(exp_length)/float(max(task_tracker["trajectory_length"], exp_length))
+            values.append(r)
+
+            writelog('benchmark_results.csv',values)
+
 
 
 

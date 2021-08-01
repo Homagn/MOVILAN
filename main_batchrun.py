@@ -44,8 +44,11 @@ task_args = Namespace(**args)
 env = sensing()
 
 for i1 in rooms:
+    success_log = {i1:{}}
     for i2 in task_idcs:
+        success_log[i1] = {i2:{}}
         for i3 in trial_nums:
+            success_log[i1][i2] = {i3:{}}
             print("*******************************************************")
             print("*******************************************************")
             print("------------- ROOM ---------------------------------",i1)
@@ -69,11 +72,17 @@ for i1 in rooms:
                 print(" ")
 
             if inp=='y':
-                hlp.run(env,sentences,list_intent,list_dic_parsing,int(i1))
+                success_log[i1][i2][i3] = hlp.run(env,sentences,list_intent,list_dic_parsing,int(i1))
             else:
-                hlp.run(env,sentences,list_intent,list_dic_parsing)
+                success_log[i1][i2][i3] = hlp.run(env,sentences,list_intent,list_dic_parsing)
 
             print("\n\n\n\n")
+
+
+import json
+
+with open("success_log.json", "w") as write_file:
+    json.dump(success_log, write_file, indent=4)
 
 
 

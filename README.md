@@ -75,6 +75,7 @@ python3 main_batchrun.py > SomeFile.txt
 
 
 (ERRORS ?)
+
 If the display is not opening up from the docker instance (if youre using linux azure VM and docker from inside it)
 https://github.com/mviereck/x11docker/issues/186
 and

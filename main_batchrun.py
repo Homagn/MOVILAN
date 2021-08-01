@@ -3,6 +3,8 @@ import os
 from os import path
 import sys
 from argparse import Namespace
+import json
+
 
 os.environ['LU'] = 'language_understanding'
 sys.path.append(os.path.join(os.environ['LU']))
@@ -27,8 +29,8 @@ from planner import high_level_planner as hlp
 print("------------- Welcome to the MOVILAN execution environment -------------")
 
 #================= Parameters ==========================
-rooms = range(301,302)
-task_idcs = range(0,2)
+rooms = range(301,330)
+task_idcs = range(0,30)
 trial_nums = range(0,1) #the same room and same task can be executed in upto 3 ways by different crowd workers
 use_gt_map = True
 if use_gt_map:
@@ -52,6 +54,16 @@ for i1 in rooms:
         success_log[i1] = {i2:{}}
         for i3 in trial_nums:
             success_log[i1][i2] = {i3:{}}
+            
+            try:
+                env.prepare_navigation_environment(room = int(i1), task_index = int(i2), trial_num = int(i3))
+                env.set_task(task_completion_arguments = task_args)
+
+                sent_list = env.get_instructions()
+
+            except:
+                continue #some rooms do not have 30 demonstrated tasks
+
             print("*******************************************************")
             print("*******************************************************")
             print("------------- ROOM ---------------------------------",i1)
@@ -59,10 +71,6 @@ for i1 in rooms:
             print("------------- trial number -------------------------",i3)
             print("*******************************************************")
             print("*******************************************************")
-            env.prepare_navigation_environment(room = int(i1), task_index = int(i2), trial_num = int(i3))
-            env.set_task(task_completion_arguments = task_args)
-
-            sent_list = env.get_instructions()
 
             p = ip.parse() #takes around 0.05s for parsing a single sentence
             sentences = env.traj_data['turk_annotations']['anns'][0]["high_descs"]
@@ -83,13 +91,14 @@ for i1 in rooms:
             gc_alg.append(success_log[i1][i2][i3]["post_conditions"][0])
             gc_all.append(success_log[i1][i2][i3]["post_conditions"][1])
 
-success_log["list_gc_alg"] = gc_alg
-success_log["list_gc_all"] = gc_all
+            #Write down the success log file 
+            success_log["list_gc_alg"] = gc_alg
+            success_log["list_gc_all"] = gc_all
 
-import json
+            with open("success_log.json", "w") as write_file:
+                json.dump(success_log, write_file, indent=4)
 
-with open("success_log.json", "w") as write_file:
-    json.dump(success_log, write_file, indent=4)
+
 
 
 

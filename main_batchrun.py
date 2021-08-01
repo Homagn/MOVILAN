@@ -46,6 +46,13 @@ env = sensing()
 for i1 in rooms:
     for i2 in task_idcs:
         for i3 in trial_nums:
+            print("*******************************************************")
+            print("*******************************************************")
+            print("------------- ROOM ---------------------------------",i1)
+            print("------------- task index ---------------------------",i2)
+            print("------------- trial number -------------------------",i3)
+            print("*******************************************************")
+            print("*******************************************************")
             env.prepare_navigation_environment(room = int(i1), task_index = int(i2), trial_num = int(i3))
             env.set_task(task_completion_arguments = task_args)
 
@@ -65,6 +72,8 @@ for i1 in rooms:
                 hlp.run(env,sentences,list_intent,list_dic_parsing,int(i1))
             else:
                 hlp.run(env,sentences,list_intent,list_dic_parsing)
+
+            print("\n\n\n\n")
 
 
 

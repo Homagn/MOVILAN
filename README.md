@@ -57,7 +57,7 @@
     
     cd /ai2thor
     
-    python3 main.py
+    python3 main_interactive.py
 
     (it should open up an ai2thor instance and run an execution of our algorithm for an instruction in ALFRED dataset)
 
@@ -70,7 +70,7 @@ In mapper/params.py you can change debug_viz= True or false depending on whether
 
 The code creates a lot of log outputs depicting the various stages of decision making to make a log you can try
 
-python3 main.py > SomeFile.txt 
+python3 main_batchrun.py > SomeFile.txt 
 
 
 

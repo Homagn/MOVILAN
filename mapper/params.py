@@ -13,3 +13,5 @@ trajectory_data_location = '/alfred/data/json_2.1.0/train/*-'
 
 trainrooms = [301,302,304,305,306,313,314,321,322,328,329]
 trainobjects = ["Bed","Desk","Dresser","SideTable","Chair","ArmChair","DiningTable","Shelf","Safe","Sofa","nav_space"]
+
+debug_viz = True

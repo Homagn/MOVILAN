@@ -27,8 +27,8 @@ from planner import high_level_planner as hlp
 print("------------- Welcome to the MOVILAN execution environment -------------")
 
 #================= Parameters ==========================
-rooms = range(301,305)
-task_idcs = range(0,10)
+rooms = range(301,302)
+task_idcs = range(0,2)
 trial_nums = range(0,1) #the same room and same task can be executed in upto 3 ways by different crowd workers
 use_gt_map = True
 if use_gt_map:
@@ -42,6 +42,9 @@ else:
 args = {'data_path':'robot/data', 'num_threads':1, 'reward_config':'robot/data/config/rewards.json', 'shuffle':False, 'smooth_nav':True, 'time_delays':False}
 task_args = Namespace(**args)
 env = sensing()
+
+gc_alg=[]
+gc_all=[]
 
 for i1 in rooms:
     success_log = {i1:{}}
@@ -77,7 +80,11 @@ for i1 in rooms:
                 success_log[i1][i2][i3] = hlp.run(env,sentences,list_intent,list_dic_parsing)
 
             print("\n\n\n\n")
+            gc_alg.append(success_log[i1][i2][i3]["post_conditions"][0])
+            gc_all.append(success_log[i1][i2][i3]["post_conditions"][1])
 
+success_log["list_gc_alg"] = gc_alg
+success_log["list_gc_all"] = gc_all
 
 import json
 

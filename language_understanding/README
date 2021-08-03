@@ -1,0 +1,15 @@
+Paper describing the technique is in About folder
+
+Main code for execution is instruction_parser.py (first time run may require internet access through the docker container)
+Main code for training is the same as in the github repo
+
+Our curated language parsing labels for indoor navigation is in data/alfred
+
+
+Additional helper codes connecting to other parts (not directly related to BERT code) :
+equivalent_concepts.py 
+parse_funcs.py
+naming.py
+
+github link:
+https://github.com/monologg/JointBERT

@@ -1,0 +1,18 @@
+#list of files to ignore
+
+*.csv
+*.txt
+*.JPG
+*.npy
+*.pth
+*.json
+*.jpg
+*.bin
+*.pdf
+*.pptx
+
+language_understanding/data
+language_understanding/alfred_1000_modification
+mapper/data
+mapper/nn_weights
+

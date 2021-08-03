@@ -1,0 +1,5 @@
+To generate data use -> datagen.py
+Approximate projection algorithms-> projection.py
+graph convolution definitions ->graph_convnet.py
+training-> train_gcn.py
+testing and runtime inference -> test_gcn.py

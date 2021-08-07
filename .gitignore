@@ -10,6 +10,7 @@
 *.bin
 *.pdf
 *.pptx
+*.pyc
 
 language_understanding/data
 language_understanding/alfred_1000_modification

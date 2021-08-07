@@ -93,7 +93,7 @@ class sensing(object):
             self.trial_num = trial_num
 
             #obtain the trajectory folder that describes the entire scene settings and also stores the task instruction
-            folders = sorted(glob.glob('/alfred/data/json_2.1.0/train/*'+repr(rn))) #for home computer
+            folders = sorted(glob.glob('/alfred/data/json_2.1.0/train/*-'+repr(rn))) #for home computer
             print("Number of demonstrated tasks for this room ",len(folders))
             trials = glob.glob(folders[task_index]+'/*') #there would be len(folders) number of different tasks 
             print("Number of different trials (language instr) for the same task ",len(trials))

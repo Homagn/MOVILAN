@@ -93,7 +93,8 @@ class sensing(object):
             self.trial_num = trial_num
 
             #obtain the trajectory folder that describes the entire scene settings and also stores the task instruction
-            folders = sorted(glob.glob('/alfred/data/json_2.1.0/train/*-'+repr(rn))) #for home computer
+            #folders = sorted(glob.glob('/alfred/data/json_2.1.0/train/*-'+repr(rn))) #for home computer
+            folders = sorted(glob.glob(params.trajectory_data_location+repr(rn)))
             print("Number of demonstrated tasks for this room ",len(folders))
             trials = glob.glob(folders[task_index]+'/*') #there would be len(folders) number of different tasks 
             print("Number of different trials (language instr) for the same task ",len(trials))
@@ -136,7 +137,7 @@ class sensing(object):
         return self.perception.depth_frame
     def identify_segmented_color(self,c):
         for color in self.perception.metadata['colors']:
-            if color['color'] == c:
+            if color['color'][0] == c[0] and color['color'][1] == c[1] and color['color'][2] == c[2]:
                 return color['name']
         return "Nothing"
     def actuator_success(self):
@@ -165,7 +166,10 @@ class sensing(object):
     def check_collision(self,direction):
         if self.abstraction=='ai2thor':
             #https://ai2thor.allenai.org/ithor/documentation/navigation/
-            event = self.step(dict({"action": "Done"})) #provides a cleaned up metedata
+            #event = self.step(dict({"action": "Done"})) #provides a cleaned up metedata
+            #provides a cleaned up metedata
+            event = self.step(dict({"action": "LookUp"})) 
+            event = self.step(dict({"action": "LookDown"})) 
             x1,y1,z1 = self.get_position()
 
             event = self.step(dict({"action": direction}))

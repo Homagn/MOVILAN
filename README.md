@@ -62,6 +62,12 @@
     (it should open up an ai2thor instance and run an execution of our algorithm for an instruction in ALFRED dataset)
 
 
+DEBUGGING pipeline
+
+For new rooms objects may not be identifiable in a map
+go to /ai2thor/mapper/datagen.py and follow the instructions in the end comments to generate maps and correct maps
+
+
 (ERRORS ?)
 If the display is not opening up from the docker instance (if youre using linux azure VM and docker from inside it)
 https://github.com/mviereck/x11docker/issues/186

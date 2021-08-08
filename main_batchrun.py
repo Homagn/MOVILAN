@@ -39,9 +39,9 @@ def writelog(fname, values):
 print("------------- Welcome to the MOVILAN execution environment -------------")
 
 #================= Parameters ==========================
-rooms = range(301,330)
+rooms = range(301,315)
 task_idcs = range(0,30)
-trial_nums = range(0,1) #the same room and same task can be executed in upto 3 ways by different crowd workers
+trial_nums = range(0,3) #the same room and same task can be executed in upto 3 ways by different crowd workers
 use_gt_map = True
 if use_gt_map:
     inp = 'y'

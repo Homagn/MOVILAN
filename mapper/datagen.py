@@ -7,6 +7,7 @@ import json
 import random
 import copy
 import argparse
+import cv2
 
 #sys.path.append(os.path.join(os.environ['ALFRED_ROOT']))
 #sys.path.append(os.path.join(os.environ['ALFRED_ROOT'], 'gen'))
@@ -44,6 +45,7 @@ parser.add_argument('--checkpan', dest='checkpan', action='store_true')
 parser.add_argument('--checkinput', dest='checkinput', action='store_true')
 parser.add_argument('--checktarget', dest='checktarget', action='store_true')
 parser.add_argument('--specific_input', dest='specific_input', action='store_true')
+parser.add_argument('--live_explore', dest='live_explore', action='store_true')
 
 args = parser.parse_args()
 
@@ -61,6 +63,12 @@ def get_file(rn = 302, task_index = 1, trial_num = 0):
     traj = glob.glob(trials[trial_num]+'/*.json')
     print("got trajectory file ",traj)
     return traj
+
+def list_nicely(l):
+    c = 0
+    for i in l:
+        print(i,"----",c)
+        c+=1
 
 def set_env(json_file, env = []):
     if env==[]:
@@ -272,10 +280,24 @@ if __name__ == '__main__':
         print("Agent camera can see target ? ",can_see_target)
 
     if args.checktarget: #check whether the projection mapping was done properly
-        room = 301
-        pos = [2,0]
-        room_obj = 'Bed'
+        room = args.room
         o_grids = np.load('data/targets/'+repr(room)+'.npy',allow_pickle = 'TRUE').item()
+        print("All the objects in the room \n ")
+        list_nicely(o_grids.keys())
+        obidx = input("Enter the number from the object list above ")
+        
+        nav_pos = np.argwhere(o_grids['nav_space']==1).tolist()
+        print("All the navigable positions in the room are \n")
+        list_nicely(nav_pos)
+        pidx = input("Enter the number from the position list above ")
+        #sys.exit(0)
+        
+
+        #pos = [2,0]
+        pos = nav_pos[int(pidx)]
+        #room_obj = 'Bed'
+        room_obj = list(o_grids.keys())[int(obidx)]
+        
         #nav_map is an array of params.grid_size x params.grid_size  -each grid [i,j] contains an integer between 0 to 4 denoting the type of object occupying that place
         #whether its a target/navgable space/unk/obstacle
         nav_map_t = gtm.target_navigation_map(  o_grids, room_obj, 
@@ -336,98 +358,86 @@ if __name__ == '__main__':
         np.save('data/inputs/bev_'+repr(r)+'_'+repr([p[1],p[0]])+'.npy',bev)
         print("saved panorama projection image for the room ",r," for the position ",[p[1],p[0]])
 
+    if args.live_explore:
+        env,event = init_once(room = args.room, task = 1) #every room should have atleast 1 task
+        o_grids = np.load('data/targets/'+repr(args.room)+'.npy',allow_pickle = 'TRUE').item()
+        
+        def live_map(env):
+            x,y,z = env.get_position()
+            rot = env.get_rotation() 
+            locate = [int((x-o_grids['min_pos']['mx'])/0.25), int((z-o_grids['min_pos']['mz'])/0.25), rot]
+            nav_map_t = gtm.target_navigation_map(  o_grids, 'nav_space', 
+                                                    {'x':x, 'y':0.0, 'z': z}, 
+                                                    grid_size = params.grid_size, 
+                                                    unk_id = params.semantic_classes['unk'],
+                                                    flr_id = params.semantic_classes['flr'], 
+                                                    tar_id = params.semantic_classes['tar'], 
+                                                    obs_id = params.semantic_classes['obs'])
+
+            print("Showing ground truth map")
+            gtm.prettyprint(o_grids['nav_space'], locator = locate)
+            #proj.starviz(o_grids['nav_space'])
+
+        
+        winname = "seg"
+        s = env.get_segmented_image()
+        cv2.imshow("seg",s)
+
+        def process_mouse_events(event,x,y,flags,param): #allows for continuous key press !
+            global s
+            # to check if left mouse  
+            # button was clicked 
+            mouse_state = {'button':None, 'position':None}
+            if event == cv2.EVENT_LBUTTONDOWN: 
+                  
+                # font for left click event 
+                font = cv2.FONT_HERSHEY_TRIPLEX 
+                LB = 'Left Button'
+                print("left button pressed at ",x,y)
+                print("colors ",s[y,x,:], env.identify_segmented_color(s[y,x,:]))
+                mouse_state['button'] = 'left'
+                mouse_state['position'] = (x,y)
+                px,py = x,y
+            else:
+                mouse_state['button'] = None
+                mouse_state['position'] = None
+                px,py = -1,-1
+
+        
+        cv2.setMouseCallback(winname, process_mouse_events)
+
+        while(True):
+            s = env.get_segmented_image()
+            cv2.imshow(winname,s)
+            c = cv2.waitKey(0)
+
+
+            #c = input("Enter command ")
+            if c==ord('w'):
+                event = env.step(dict({"action": "MoveAhead"}))
+            if c==ord('a'):
+                event = env.step(dict({"action": "MoveLeft"}))
+            if c==ord('s'):
+                event = env.step(dict({"action": "MoveBack"}))
+            if c==ord('d'):
+                event = env.step(dict({"action": "MoveRight"}))
+            if c==ord('r'):
+                event = env.step(dict({"action": "RotateRight"}))
+            if c==ord('l'):
+                event = env.step(dict({"action": "RotateLeft"}))
+            if c==ord('b'):
+                break
+            
+
+            live_map(env)
 
 
 
-
-
-
-
-
-
-
-
-    
-    '''
-    #obtain input vision panorama images and approx projection map from that
-    env,event = init()
-    debug = False # True-load premade panorama image/ False- Dont
-    gridsize = 33
-
-    panorama = pan.rotation_image(env, objects_to_visit = [], debug = debug) #gets a panorama image of everything thats visible
-    
-    bev = proj.bevmap(panorama,grid_size = gridsize, debug = debug)
-    #save the obtained bev projection
-    np.save('../ai2thor/mapping/data/inputs/bev.npy',bev)
-
-    proj.displaymap(bev,'Desk')
-    nav_map = proj.input_navigation_map(bev, 'Desk', grid_size = gridsize, unk_id = 0,flr_id = 1, tar_id = 2, obs_id = 3)
-    print("Now displaying input navigation map")
-    proj.prettyprint(nav_map,argmax = True)
-    #print(nav_map) #should be grid_size x grid_size x 4 matrix contain floats between 0 and 1
-    '''
-
-
-
-    '''
-    # creating ground truth BEV maps
-    room  = 0
-    task = 164
-    env,event = init(room  = room, task  = task)
-    #o_grids stores BEV map for all objects as indexed in the event metadata
-    fname = '/home/hom/Desktop/ai2thor/mapping/gcdata/'+repr(room)+'.npy'
-    o_grids = gtm.gtmap(env,event) # Obtains ground truth occupancy grids using Ai2Thor functions / try-> Dresser|-01.33|+00.00|-00.75 for room 301 
-    np.save(fname,o_grids)
-    '''
-
-    
-    
-    '''
-    #loading ground truth BEV maps
-    room  = 0
-    task = 164
-    fname = '/home/hom/Desktop/ai2thor/mapping/gcdata/'+repr(room)+'.npy'
-    o_grids = np.load(fname,allow_pickle = 'TRUE').item()
-    print("The navigable space ")
-    gtm.prettyprint(o_grids['nav_space']) #navigable space in the map considering all obstructions
-    print("The fixed obstructions map")
-    gtm.prettyprint(o_grids['fixed_obstructions']) #grid with 0s and 1s showing navigable spaces with all objects in the room removed 
-    '''
-
-    
-    '''
-    #utilizing gt maps
-    print("The navigable space ")
-    print(o_grids['nav_space']) #navigable space in the map considering all obstructions
-    # with vision radius of 16, chose a grid size of 33
-    position = {'x':-0.75, 'y':0.9009992, 'z':-1.25}
-    #nav_map_t = gtm.target_navigation_map(o_grids, 'Bed', [0,0], grid_size = 33, unk_id = 0,flr_id = 1, tar_id = 2, obs_id = 3)
-    nav_map_t = gtm.target_navigation_map(o_grids, 'Bed', position, grid_size = 33, unk_id = 0,flr_id = 1, tar_id = 2, obs_id = 3)
-    print("The target navigation map ")
-    gtm.prettyprint(nav_map_t)
-    print("The fixed obstructions map")
-    gtm.prettyprint(o_grids['fixed_obstructions']) #grid with 0s and 1s showing navigable spaces with all objects in the room removed 
-    '''
-
-
-
-    '''
-    #random testing
-    #gtm.target_vectors() #-> {'Bed|-00.64|+00.00|+00.87': array([ 0.,  3.,  5.,  9.,  0., 13., -5.,  8.])}
-    
-    fname = '/home/hom/Desktop/ai2thor/mapping/gcdata/'+repr(301)+'.npy'
-    o_grids = np.load(fname,allow_pickle = 'TRUE').item()
-    #gtm.prettyprint(o_grids['Bed|-00.64|+00.00|+00.87'])
-    gtm.target_vectors1(o_grids,'Bed')
-    '''
-
-    
-    #manual labeling for objects that are unable to be disabled and are like fixed parts in the room
-    #gtm.manual_label(301) #0 is the room number (0 is the first kitchen, 301 is the first bedroom)
 
 
 '''
-run examples
+run examples (for any new room, first get the targets, then inputs, then live_explore for map corrections and then correct)
+(live_explore will open a cv window you can click on the objects in segmented image to identify the name and also click w/a/s/d to move)
 
 (debug the panorama image acquisition process)
 python datagen.py --room 301 --task 0 --checkpan
@@ -439,6 +449,8 @@ python3 datagen.py --room 301 --task 0 --checkinput
 python3 datagen.py --room 301 --task 0 --checktarget
 
 
+(explore the map and look for map corrections)
+python datagen.py --room 301 --live_explore
 
 (correct wrong ground truth BEV data)
 python datagen.py --room 301 --correct

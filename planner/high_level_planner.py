@@ -130,7 +130,8 @@ def other_side_attempt(GRIDS,FACE_GRIDS,target_obj,ref_obj,localize_params, env)
 
 
 def get_file(rn = 302, task_index = 1, trial_num = 0):
-    folders = sorted(glob.glob('/alfred/data/json_2.1.0/train/*'+repr(rn))) #for home computer
+    #folders = sorted(glob.glob('/alfred/data/json_2.1.0/train/*'+repr(rn))) #for home computer
+    folders = sorted(glob.glob(params.trajectory_data_location+repr(rn)))
     #folders = sorted(glob.glob('/home/microway/Desktop/hsaha/ai2thor/alfred/data/json_2.1.0/train/*'+repr(rn))) #for cluster
     #print("glob folders ",folders)
     #use sorted(glob.glob()) for systematic order in accesing the files
@@ -522,6 +523,8 @@ def run(env, sentences, intents, slot_dicts, ground_truth_map = -1):
     except:
         print("failed to execute complete action for some error")
         traceback.print_exc()
+        exp_length = get_demo_traj_length(env.rn, env.task_index, env.trial_num) #they sould be set earlier in main file
+        task_tracker["exp_length"] = exp_length
         task_tracker["goal_satisfied"] = 0
         task_tracker["subgoal_idx"] = -1
         task_tracker["post_conditions"] = env.get_postconditions_met()

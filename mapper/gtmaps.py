@@ -142,13 +142,13 @@ def prettyprint(mat,argmax = False, locator = [-1,-1,-1]):
                 d = repr(int(mat[i,j]))
                 if locator[0]==i and locator[1]==j:
                     if locator[2]==0:
-                        d = "\u2192" #right arrow
+                        d = '>' #"\u2192" #right arrow
                     if locator[2]==270:
-                        d = "\u2191" #up arrow
+                        d = '^' #"\u2191" #up arrow
                     if locator[2]==90:
-                        d = "\u2193" #down arrow
+                        d = 'v' #"\u2193" #down arrow
                     if locator[2]==180:
-                        d = "\u2190" #left arrow
+                        d = '<' #"\u2190" #left arrow
 
 
             print(d,end = '')
@@ -210,10 +210,15 @@ def target_navigation_map(o_grids, obj, agentloc, grid_size = 32, unk_id = 0,flr
         m = surrounding_patch(agentloc, m, R=int(grid_size/2), unreach_value = unk_id)
         return m
 
+    #two different modes of searching (if exact id is passed it is sometimes helpful if multiple objects of same type- ex- multiple chairs)
+    if '|' not in obj:
+        searchkey = obj+'|'
+    else:
+        searchkey = obj
     #==========================
     #if only asking about navigating to a specific target object
     for n in o_grids.keys():
-        if obj+'|' in n:
+        if searchkey in n:
             if verbose:
                 print("Got exact objectid ",n)
             t = tar_id*o_grids[n]

@@ -73,6 +73,11 @@ The code creates a lot of log outputs depicting the various stages of decision m
 python3 main_batchrun.py > SomeFile.txt 
 
 
+
+
+
+
+
 VIEWING EXPERT TRAJECTORIES
 
 cd /ai2hor/robot/
@@ -80,6 +85,9 @@ cd /ai2hor/robot/
 (replace with room number and task number)
 
 python3 master_execution.py --room 1 --task 1 --gendata
+
+
+
 
 
 

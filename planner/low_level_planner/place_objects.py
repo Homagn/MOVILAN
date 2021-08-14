@@ -1,6 +1,8 @@
 import numpy as np
 import sys
 import os
+import copy
+
 os.environ['MAIN'] = '/ai2thor'
 sys.path.append(os.path.join(os.environ['MAIN']))
 
@@ -9,17 +11,31 @@ import planner.low_level_planner.object_localization as object_localization
 import planner.low_level_planner.object_type as object_type
 import planner.low_level_planner.move_camera as move_camera
 import planner.low_level_planner.resolve as resolve
+import planner.low_level_planner.refinement as refinement
 
 location_in_fov = object_localization.location_in_fov
+object_in_fov = object_localization.object_in_fov
 openables = object_type.openables
 set_default_tilt = move_camera.set_default_tilt
 field_of_view = resolve.field_of_view
+swivel_search = refinement.swivel_search
 
-CONFUSIONS = eqc.CONFUSIONS
+CONFUSIONS = eqc.CONFUSIONS_M
 CONFLICT = eqc.CONFLICT
+CONTEXTUALS = eqc.CONTEXTUALS
+
 bigNsmallobs = object_type.bigNsmallobs
 possible_receptacle = object_type.possible_receptacle
 common_connected_component = object_localization.common_connected_component
+
+
+def check_place(env):
+    if env.check_inventory()!=[]:
+        print("Place was unsuccessful ! ,object in hand ",env.check_inventory()[0]['objectId'])
+        return False
+    elif env.check_inventory()==[]:
+        print("Place was successful !")
+        return True
 
 def resolve_place(manip_action,targ_obj,ref_rel,ref_obj):
     print("(manipulation_signatures.py -> resolve_place)")
@@ -69,7 +85,8 @@ def refined_place(manip_action,targ_obj,refinement_rel,refinement_obj,env,tries=
     if env.check_inventory()!=[]:
         for inv in range(len(env.check_inventory())):
             print("Current object in hand ",env.check_inventory()[inv]['objectId'])
-            targets.append(event.metadata['inventoryObjects'][inv]['objectId'])
+            #targets.append(event.metadata['inventoryObjects'][inv]['objectId'])
+            targets.append(env.check_inventory()[inv]['objectId'])
 
 
 
@@ -178,7 +195,10 @@ def refined_place(manip_action,targ_obj,refinement_rel,refinement_obj,env,tries=
     
     
     receptacle = ""
+    receptacle_addendum = ""
     print("Big object (receps) ",big)
+
+
 
     #sometimes user may use general terms such as place the book on the table whereas it should be Desk or SideTable
     mask_image = env.get_segmented_image()
@@ -206,7 +226,16 @@ def refined_place(manip_action,targ_obj,refinement_rel,refinement_obj,env,tries=
         print("Changed big object (receps) ",big, " to ",n_big)
     big = n_big
 
+    if big[0] in list(CONTEXTUALS["place"].keys()):
+        receptacle_addendum = '|'+CONTEXTUALS["place"][big[0]]
+        #if its Sink|+00.00|+00.89|-01.44, you need to place the object in Sink|+00.00|+00.89|-01.44|SinkBasin (room 2,task1,trial0)
+        print("Contextual place operation encountered, adding extra context ",receptacle_addendum)
 
+
+
+    env, receptacle, all_visibles = object_in_fov(env,big)
+    
+    '''
     all_visibles = []
     #finding the receptacle object
     env.step(dict({"action": "LookUp"}))
@@ -236,6 +265,17 @@ def refined_place(manip_action,targ_obj,refinement_rel,refinement_obj,env,tries=
     
     for j in range(cnt-1):
         env.step(dict({"action": "LookUp"}))
+    '''
+    
+
+
+
+
+    if receptacle=="":
+        print("Receptacle not found, trying to swivel and search ")
+        swivel_search(env,big[0])
+        env, receptacle, all_visibles = object_in_fov(env,big)
+
     #nudge left right and try to find the receptacle
     if receptacle=="":
         print("Receptacle still not found, nudging left right ")
@@ -261,12 +301,15 @@ def refined_place(manip_action,targ_obj,refinement_rel,refinement_obj,env,tries=
                         pass
                     else:
                         r_ref_obj.append(r)
-                receptacle = common_connected_component(mask_image,event,r_ref_obj)
+                #receptacle = common_connected_component(mask_image,event,r_ref_obj)
+                receptacle = common_connected_component(mask_image,env,r_ref_obj)
             except:
                 receptacle = "NOTHING"
     #applying place operation for detected target objects 
     #for tries in range(6): #3 tries to place the object
     t = targets[0]
+    if receptacle_addendum not in receptacle:
+        receptacle = receptacle+receptacle_addendum #based on additional infered context
     print("Trying to place the object ",t, " on the receptacle ",receptacle," (refined_place)")
 
     #print("objects in agents inventory ", event.metadata['inventoryObjects'])
@@ -274,7 +317,8 @@ def refined_place(manip_action,targ_obj,refinement_rel,refinement_obj,env,tries=
     env.step(dict({"action": "LookDown"}))
     env.step(dict({'action': 'PutObject', 'objectId': t, 'receptacleObjectId': receptacle, 'placeStationary': True, 'forceAction': True}))
 
-    if env.actuator_success()!=[]:
+    #print("Environment actuator success ",env.actuator_success())
+    if not env.actuator_success():
         print("Place was not successful ! ,object in hand ",env.check_inventory()[0]['objectId'])
         print("Trying again by looking down ") #for low lying receptacles like couch
         env.step(dict({"action": "LookDown"}))
@@ -301,13 +345,17 @@ def refined_place(manip_action,targ_obj,refinement_rel,refinement_obj,env,tries=
             env.step(dict({"action": "MoveAhead", "moveMagnitude" : 0.25}))
 
         if tries>=6:
-            return env,event
+            #return env,event
+            return env
 
         return  refined_place(o_manip_action,o_targ_obj,o_refinement_rel,o_refinement_obj,env,tries=tries+1)
 
 
     return env
         
+
+
+#try to modify it
 def refined_place2(manip_action,targ_obj,refinement_rel,refinement_obj,env,tries = 0):
     print("(manipulation_signatures.py -> refined_place2)")
     print("Trying this for ",tries," time")
@@ -475,6 +523,10 @@ def refined_place2(manip_action,targ_obj,refinement_rel,refinement_obj,env,tries
     depth_image = env.get_depth_image()
     lf,mf,rf,areas,_ = location_in_fov(env,mask_image,depth_image)
     receptacle = ""
+
+    env, receptacle, _ = object_in_fov(env,big)
+
+    '''
     #print("lf keys ",lf.keys())
     #print("mf keys ",mf.keys())
     #print("rf keys ",rf.keys())
@@ -497,7 +549,16 @@ def refined_place2(manip_action,targ_obj,refinement_rel,refinement_obj,env,tries
             print("Exact object iD for ",k1," is ",k)
             receptacle = k
             break
+    '''
 
+
+
+
+    if receptacle=="":
+        print("Receptacle not found, trying to swivel and search ")
+        swivel_search(env,big[0])
+        env, receptacle, _ = object_in_fov(env,big)
+    
     if receptacle=="":
         print("Receptacle still not found, looking for connected components ")
         mask_image = env.get_segmented_image()
@@ -509,11 +570,13 @@ def refined_place2(manip_action,targ_obj,refinement_rel,refinement_obj,env,tries
                     pass
                 else:
                     r_ref_obj.append(r)
-            receptacle = ms.common_connected_component(mask_image,event,r_ref_obj)
+            #receptacle = common_connected_component(mask_image,event,r_ref_obj)
+            receptacle = common_connected_component(mask_image,env,r_ref_obj)
         except:
             receptacle = "NOTHING"
 
     t = targets[0]
+
     print("Trying to place the object ",t, " on the receptacle ",receptacle, "(refined_place2)")
     #print("objects in agents inventory ", event.metadata['inventoryObjects'])
     
@@ -521,7 +584,8 @@ def refined_place2(manip_action,targ_obj,refinement_rel,refinement_obj,env,tries
     env.step(dict({'action': 'PutObject', 'objectId': t, 'receptacleObjectId': receptacle, 'placeStationary': True, 'forceAction': True}))
     
     if env.check_inventory()!=[] and tries<6: #something is still in hand
-        print("Place was not successful ! ,object in hand ",event.metadata['inventoryObjects'][0]['objectId'])
+        #print("Place was not successful ! ,object in hand ",event.metadata['inventoryObjects'][0]['objectId'])
+        print("Place was not successful ! ,object in hand ",env.check_inventory()[0]['objectId'])
         
         if tries==0 or tries==3:
             print("Tilting head all the way up and scanning top to bottom")

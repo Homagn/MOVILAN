@@ -7,8 +7,47 @@ os.environ['MAIN'] = '/ai2thor'
 sys.path.append(os.path.join(os.environ['MAIN']))
 
 from mapper import test_gcn
+from planner import params
 
 import planner.low_level_planner.object_localization as object_localization
+import planner.low_level_planner.move_camera as move_camera
+import planner.low_level_planner.resolve as resolve
+
+set_default_tilt = move_camera.set_default_tilt 
+field_of_view = resolve.field_of_view
+# sometimes the robot cannot ind the receptacle object in its field of view so swivel and search
+def swivel_search(env,obj):
+
+    env.custom_rotation(params.camera_horizon_angle,30)
+    field = field_of_view(env)
+    print("swivel searching for object ",obj)
+    print("swivel search got field ",field)
+    #obj_vis = obj+'|' in field.keys()
+    obj_vis = any([obj+'|' in a for a in list(field.keys())])
+    if obj_vis:
+        print("Found ",obj," in swivel left ")
+        env.custom_rotation(params.camera_horizon_angle,-30)
+        event = env.step(dict({"action": "MoveLeft", 'forceAction': True}))
+    else:
+        env.custom_rotation(params.camera_horizon_angle,-30)
+        obj_vis = obj+'|' in field.keys()
+        if obj_vis:
+            print("Found ",obj," in swivel right ")
+            env.custom_rotation(params.camera_horizon_angle,30)
+            event = env.step(dict({"action": "MoveRight", 'forceAction': True}))
+        else:
+            return env #object was not visible in either swivel leftt or right
+
+    #if after slight movement left/right the object again recedes out of view, recursively swivel again
+    field = field_of_view(env)
+    #obj_vis = obj+'|' in field.keys()
+    obj_vis = any([obj+'|' in a for a in list(field.keys())])
+    if not obj_vis:
+        return swivel_search(env,obj)
+    else:
+        return env
+    
+
 
 def nudge(areas, key, env, act1,act2, rollback = False):
     #NOTE!
@@ -79,20 +118,36 @@ def unit_refinement(env, obj, numtry = 0):
                 print(k," has area ",areas[k])
     if key=="":
         print("Object went out of sight trying to realign")
-        env.step(dict({"action": "RotateLeft", 'forceAction': True}))
+        
         #event = env.step(dict({"action": "RotateLeft"}))
         #t.sleep(2)
         #event = env.step(dict({"action": "RotateRight"}))
-        if numtry<3:
+        
+        #write a function for spiralling upwards camera view formation and put that function in move_camera.py
+        if numtry<=3:
+            env.step(dict({"action": "RotateLeft", 'forceAction': True}))
+            return unit_refinement(env, obj, numtry = numtry+1)
+        elif numtry>3 and numtry<6:
+            env.step(dict({"action": "LookUp", 'forceAction': True}))
+            return unit_refinement(env, obj, numtry = numtry+1)
+        elif numtry==6:
+            env = set_default_tilt(env)
+            return unit_refinement(env, obj, numtry = numtry+1)
+        elif numtry>6 and numtry<9:
+            env.step(dict({"action": "LookDown", 'forceAction': True}))
             return unit_refinement(env, obj, numtry = numtry+1)
         
         else:
+            env = set_default_tilt(env)
             return env
+        
+
 
 
 
     env = nudge(areas, key, env, "MoveLeft","MoveRight")
     env = nudge(areas, key, env, "MoveAhead","MoveBack")
     env = nudge(areas, key, env, "RotateLeft","RotateRight")
+    env = nudge(areas, key, env, "LookUp","LookDown")
     
     return env

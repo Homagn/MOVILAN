@@ -282,10 +282,10 @@ def search(nav, facing_positions, env, tar_object, localize_params, notarget = T
         print("Failed to find a path to the object after several tries ")
         return env
         #return env, event
-    return execute_path(env, nav, path, face_dir, tar_object, localize_params, numtries = numtries)
+    return execute_path(env, nav, path, face_dir, tar_object, localize_params, facing_positions, other_side = other_side, numtries = numtries)
     
 
-def execute_path(env, nav, path, face_dir, tar_object, localize_params, numtries = 0):
+def execute_path(env, nav, path, face_dir, tar_object, localize_params, facing_positions, other_side = 0, numtries = 0):
     ######################   executing the path #######################
     move_dir = {(0,1):0,(-1,0):270,(0,-1):180,(1,0):90}
     face_dir_rots = [0,270,180,90]
@@ -327,7 +327,7 @@ def execute_path(env, nav, path, face_dir, tar_object, localize_params, numtries
             
             if numtries<10: #give 10 random nudges
 
-                env,event,nav = Random_nudge(env,nav,si,sj)
+                env,nav = Random_nudge(env,nav,si,sj)
                 return search(nav, facing_positions, env, tar_object, localize_params, numtries = numtries+1, other_side = other_side) #enter next recursion stage
             
             #event = env.step(dict({"action": "MoveRight", "moveMagnitude" : 0.25}))

@@ -421,10 +421,14 @@ if __name__ == '__main__':
                 event = env.step(dict({"action": "MoveBack"}))
             if c==ord('d'):
                 event = env.step(dict({"action": "MoveRight"}))
-            if c==ord('r'):
+            if c==ord('i'):
                 event = env.step(dict({"action": "RotateRight"}))
-            if c==ord('l'):
+            if c==ord('j'):
                 event = env.step(dict({"action": "RotateLeft"}))
+            if c==ord('o'):
+                event = env.step(dict({"action": "LookUp"}))
+            if c==ord('k'):
+                event = env.step(dict({"action": "LookDown"}))
             if c==ord('b'):
                 break
             

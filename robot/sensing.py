@@ -24,6 +24,16 @@ class sensing(object):
             from env.thor_env import ThorEnv
             self.env = ThorEnv(player_screen_width=camera['width'],player_screen_height=camera['height']) #blank ai2thor environment
 
+        self.init_memory()
+
+    def init_memory(self):
+        self.memory = {}
+        self.memory['tracked_targets'] = ["NOTHING"]
+        self.memory['tracked_refinements'] = ["NOTHING"]
+        self.memory['tracked_target_nums'] = []
+        self.memory['navigated'] = ["NOTHING"]
+
+
     def reset(self, scene_name):
         if self.abstraction=='ai2thor':
             return self.env.reset(scene_name)

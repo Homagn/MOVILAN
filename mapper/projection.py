@@ -290,6 +290,7 @@ def prettyprint(mat,argmax = False, show=True, symbolic = True):
     else:
         return False
 
+
 def starviz(labeled_grid, blocked_nodes = []):
     
     for i in range(labeled_grid.shape[0]):

@@ -241,7 +241,7 @@ def target_navigation_map(o_grids, obj, agentloc, grid_size = 32, unk_id = 0,flr
 
 def manual_label(room): #function for manually correcting wrong maps (computed automatically)
     #fname = '/home/hom/Desktop/ai2thor/mapping/gcdata/'+repr(room)+'.npy'
-    fname = '/home/hom/Desktop/ai2thor/mapping/data/targets/'+repr(room)+'.npy'
+    fname = '/ai2thor/mapper/data/targets/'+repr(room)+'.npy'
     o_grids = np.load(fname,allow_pickle = 'TRUE').item()
     print("The fixed obstructions map")
     prettyprint(o_grids['fixed_obstructions']) #grid with 0s and 1s showing navigable spaces with all objects in the room removed 
@@ -265,6 +265,12 @@ def manual_label(room): #function for manually correcting wrong maps (computed a
 
             for n in o_grids.keys():
                 mat = o_grids[n]
+                try:
+                    isarray = mat.shape
+                except:
+                    #the final element in the dictionary is not a numpy array its stores the min and max grid position in the map 
+                    #so skip this
+                    continue
                 for _ in range(int(num)):
                     if p=='t':
                         mat = np.insert(mat,0, unreach_value,axis=0) #append blank rows to the top of the agent position

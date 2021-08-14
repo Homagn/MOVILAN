@@ -9,6 +9,9 @@ from language_understanding import equivalent_concepts as eqc
 import numpy as np
 import math
 
+import planner.low_level_planner.resolve as resolve
+from planner.low_level_planner import move_camera
+field_of_view = resolve.field_of_view
 RECEPS = eqc.RECEPS
 
 def location_in_fov(env, mask_image, depth_image):
@@ -45,8 +48,38 @@ def location_in_fov(env, mask_image, depth_image):
         
     return lf,mf,rf, Areas, Cents
 
+def object_in_fov(env,obj):
+    #obj should be atleast one string in a list - eg - ["Pot"]
+    all_visibles = []
+    receptacle = ""
+    #finding the receptacle object
+    env.step(dict({"action": "LookUp"}))
+    cnt = 0
+    for i in range(3): # was 3 earlier 
+        field = field_of_view(env)
+        for k in field:
+            all_visibles.append(k)
+            try:
+                k1 = obj[0]
+            except:
+                k1 = "Nothing"
+            if k1+'|' in k:
+                print("Exact object iD for ",k1," is ",k)
+                receptacle = k
+                break
+        if receptacle!="":
+            break
+        env.step(dict({"action": "LookDown"}))
+        if env.actuator_success():
+            cnt+=1
+    
+    for j in range(cnt-1):
+        env.step(dict({"action": "LookUp"}))
 
-def common_connected_component(mask_image,event,ref_objs): 
+    move_camera.set_default_tilt(env)
+    return env, receptacle,all_visibles
+
+def common_connected_component(mask_image,env,ref_objs): 
     #used for answering questions like- what is the exact objectid on top of which there is a remote control ?
     #ref_objs generic names (not exact)
     #take the mask image and find out the component that is connected to most of the objects in the ref_objs list

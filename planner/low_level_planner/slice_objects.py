@@ -9,87 +9,87 @@ from language_understanding import equivalent_concepts as eqc
 import planner.low_level_planner.object_localization as object_localization
 import planner.low_level_planner.object_type as object_type
 import planner.low_level_planner.move_camera as move_camera
+import planner.low_level_planner.resolve as resolve
 
 location_in_fov = object_localization.location_in_fov
+
 openables = object_type.openables
+sliceables = object_type.sliceables
+
 set_default_tilt = move_camera.set_default_tilt
+field_of_view = resolve.field_of_view
 
 CONFUSIONS = eqc.CONFUSIONS_M
 
-
-def check_pick(env):
+'''
+def check_sliced(env, obj):
     if env.check_inventory()!=[]:
         print("Pick was successful ! ,object in hand ",env.check_inventory()[0]['objectId'])
         return True
     elif env.check_inventory()==[]:
         print("Pick was not successful !")
         return False
+'''
 
-def refined_pick(manip_action,targ_obj,refinement_rel,refinement_obj,env, numtries = 0, preactions = '', nudgexy = [0,0]): 
+
+
+    
+
+
+def refined_slice(manip_action,targ_obj,refinement_rel,refinement_obj,env, numtries = 0, preactions = '', nudgexy = [0,0]): 
 
     #psedocode 
     '''
-    1. Store initial arguments to facilitate backtrack during recursion
-    2. Decide whether to close an object before picking it up - eg laptop
-    3. Disambiguate what is the object to be picked from what is the object from top of which to pick/ 
-        also resolve common ambiguities with object naming such as mug/cup, plate/bowl, etc based on what is visible 
-    4. Decide a preferrential order (look-costs) to search for the object to pick up 
-        because the field of view of agent is limited, it needs to tilt its head up and down and also focus on 
-        left/right, top-left/top-right, etc regions of the visible image
-    5. Since there is a possibility of the object (to pick up) appearing in several regions of the image
-        (a table might have multiple mugs placed on top of it), but the user may specify the relative location of the mug to pick up
-        so assigning "visual-distances" that differentiate these same category pickup objects
-    6. Now if its said pick up the lower left mug or mug to the right, the agent can understand based on visual-distances
-        by aligning visual-distances with look-costs (the preferential order obtained in 4)
-    7. There is a chance that the object misses out the field of view of the agent, so nudge left right, 
-        rotate left right, and each time start fresh from step 1 using recursion
-    8. Sometimes object visible but still cannot pick up due to lack of precise positioning, so try to rotate 
+    #Follows very closesly to refined_pick 
     '''
 
 
     #1
-    print("(manipulation_signatures.py -> refined_pick)")
+    print("(manipulation_signatures.py -> refined_slice)")
     print("Trying this for ",numtries," time")
     o_manip_action = copy.copy(manip_action)
     o_targ_obj = copy.copy(targ_obj)
     o_refinement_rel = copy.copy(refinement_rel)
     o_refinement_obj = copy.copy(refinement_obj)
 
-    #2
-    if preactions=='close': #currently this will close all objects of similar type that are visible
-        print("Want to close an object before picking")
-        env.step(dict({"action": "LookDown"}))
+    
+    field = field_of_view(env)
+    targ_obj = targ_obj.split(',') #split entry into a list by commas
+    ref_obj = refinement_obj.split(',')[0]
+    print("ref object ",ref_obj)
+    print("refinement_obj  ",refinement_obj)
+    things2slice = sliceables(targ_obj) 
+    print("Got things to slice ",things2slice)
+    
+    obj_vis = any([things2slice[0]+'|' in a for a in list(field.keys())])
+    #obj_vis = things2slice[0]+'|' in field.keys()
+    _, things2open = openables(ref_obj) 
+    
+    if not obj_vis:
+        print("Warning ! object to slice is not visible, attempting to open something")
+        #2
+        container_object = things2open[0]
+        print("Decided ",container_object," as the container object")
+        #if preactions=='open': #objects inside microwave/fridge (sometimes wont explicitly tell to open and then slice, so open first)
+        print("Want to open an object before picking")
+        #env.step(dict({"action": "LookDown"}))
         mask_image = env.get_segmented_image()
         depth_image = env.get_depth_image()
 
         lf,mf,rf,_,cents = location_in_fov(env,mask_image,depth_image)
-        #again as usual doing a search for visible objects matching with the target name
-        #bacause closeobject operation has to be applied on that precise name
-        '''
-        for k in lf.keys():
-            if targ_obj+'|' in k:
-                print("Will try to close the ",k)
-                event = env.step(dict({'action': 'CloseObject', 'objectId': k}))
-        for k in mf.keys():
-            if targ_obj+'|' in k:
-                print("Will try to close the ",k)
-                event = env.step(dict({'action': 'CloseObject', 'objectId': k}))
-        for k in rf.keys():
-            if targ_obj+'|' in k:
-                print("Will try to close the ",k)
-                event = env.step(dict({'action': 'CloseObject', 'objectId': k}))
-        '''
+
 
         all_vis = list(lf.keys()) + list(mf.keys()) + list(rf.keys())
         for k in all_vis:
-            if targ_obj+'|' in k:
-                print("Will try to close the ",k)
-                env.step(dict({'action': 'CloseObject', 'objectId': k}))
+            if container_object+'|' in k:
+                print("Will try to open the ",k, "before trying to slice")
+                env.step(dict({'action': 'OpenObject', 'objectId': k}))
 
-        env.step(dict({"action": "LookUp"}))
 
 
     #3
+    #block kept as placeholder for slice confusions - eg 1 unique valid object told to slice, but another unique valid object that can also be sliced is the only object present in scene
+    '''
     targ_obj = targ_obj.split(',') #split entry into a list by commas
     things2pick, _ = openables(targ_obj) 
 
@@ -110,19 +110,20 @@ def refined_pick(manip_action,targ_obj,refinement_rel,refinement_obj,env, numtri
                 n_small[n_small.index(sm)] = CONFUSIONS[sm]
     small = n_small
     things2pick = copy.copy(small)
+    '''
 
 
     #4
-    targ_obj = things2pick[0]
+    things2slice = sliceables(targ_obj)
+    targ_obj = things2slice[0]
     manip_action = manip_action.split(',')
     relative = refinement_rel.split(',')
     ref_obj = refinement_obj.split(',')[0]
 
     act1 = manip_action[0]
-    if act1=="pick":
-        act1 = 'PickupObject'
-    if act1=="place":
-        act1 = 'PutObject'
+    if act1=="slice":
+        act1 = 'SliceObject'
+
     env.step(dict({"action": "LookUp"}))
     env.step(dict({"action": "LookUp"}))
 
@@ -209,7 +210,7 @@ def refined_pick(manip_action,targ_obj,refinement_rel,refinement_obj,env, numtri
             nx,ny = 0,0
             if env.actuator_success():
                 nx = -1
-            return refined_pick(o_manip_action,o_targ_obj,o_refinement_rel,o_refinement_obj,env,numtries = numtries+1, nudgexy = [nx,ny])
+            return refined_slice(o_manip_action,o_targ_obj,o_refinement_rel,o_refinement_obj,env,numtries = numtries+1, nudgexy = [nx,ny])
 
         if numtries==1: #nudge left right to expand field of view
             nx,ny = 0,0
@@ -218,7 +219,7 @@ def refined_pick(manip_action,targ_obj,refinement_rel,refinement_obj,env, numtri
             env.step(dict({"action": "MoveRight",'forceAction': True}))
             if env.actuator_success():
                 nx = 1
-            return refined_pick(o_manip_action,o_targ_obj,o_refinement_rel,o_refinement_obj,env,numtries = numtries+1, nudgexy = [nx,ny])
+            return refined_slice(o_manip_action,o_targ_obj,o_refinement_rel,o_refinement_obj,env,numtries = numtries+1, nudgexy = [nx,ny])
 
         print("Could not find the object, rotating and trying to find it")
         if numtries>1 and numtries<=4: #keep rotating and trying to find the object
@@ -228,7 +229,7 @@ def refined_pick(manip_action,targ_obj,refinement_rel,refinement_obj,env, numtri
                 nx = 0
             env.step(dict({"action": "RotateLeft",'forceAction': True}))
             o_refinement_obj = ''
-            return refined_pick(o_manip_action,o_targ_obj,o_refinement_rel,o_refinement_obj,env,numtries = numtries+1, nudgexy = [nx,ny])
+            return refined_slice(o_manip_action,o_targ_obj,o_refinement_rel,o_refinement_obj,env,numtries = numtries+1, nudgexy = [nx,ny])
         else:
             return env
 

@@ -12,7 +12,7 @@ interaction_objects = ["Pencil","Desk","Drawer","Dresser","Drawer","Watch","Cabi
                         "Stool","Television","TennisRacket","TissueBox","Window","Vase","Towel","Cloth",
                         "Chair","ArmChair","CounterTop","CreditCard","Cup","BasketBall","BaseballBat","AlarmClock",
                         "Wall","Room", "Mug",'Laptop','Beanbag','table','Box', 'Cloth', "Plate", "RemoteControl",
-                        "Sofa","CoffeeTable","Newspaper","Knife"]
+                        "Sofa","CoffeeTable","Newspaper","Knife","Sink","Microwave","Apple"]
 
 toggleable = ["lamp","Lamp",'light','Light','tablelamp']
 
@@ -94,6 +94,8 @@ def name_objects(obj_list,sentence): #make sense of user provided object names a
 
         if o=="tissues":
             objs = objs+"TissueBox"+','
+        if o=="counter" or o=="island" or o=="islandcounter":
+            objs = objs +"CounterTop"+','
         if o=="stool" or o=="footstool":
             objs = objs+"Ottoman"+','
         if o=="bottle" or o=="Bottle" or o=="container":
@@ -159,6 +161,7 @@ def name_objects(obj_list,sentence): #make sense of user provided object names a
         if o=="coffeetable":
             objs = objs+"CoffeeTable"+','
 
+
             
 
         
@@ -213,6 +216,8 @@ def name_actions(act_list):
             objs = objs+"carry"+','
         if o=="Look" or o=="look": 
             objs = objs+"look"+','
+        if o=="slice" or o=="cut": 
+            objs = objs+"slice"+','
         else:
             #print("WARNING ! cannot find appropriate map in name_actions")
             pass

@@ -54,6 +54,6 @@ for s in range(len(list_intent)):
 
 inp = input("Use ground truth grid occupancy data for the mapping module ? (y/n) ")
 if inp=='y':
-    hlp.run(env,sentences,list_intent,list_dic_parsing,int(i1))
+    hlp.run(env,sentences,list_intent,list_dic_parsing,int(i1), interactive = False)
 else:
-    hlp.run(env,sentences,list_intent,list_dic_parsing)
+    hlp.run(env,sentences,list_intent,list_dic_parsing, interactive = False)

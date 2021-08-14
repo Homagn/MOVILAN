@@ -3,15 +3,20 @@ from skimage.measure import regionprops, label
 
 import sys
 import os
+import copy
+
 os.environ['MAIN'] = '/ai2thor'
 sys.path.append(os.path.join(os.environ['MAIN']))
 
 from language_understanding import equivalent_concepts as eqc
 
 GOTOOBJS = eqc.GOTOOBJS
+CONFUSIONS = eqc.CONFUSIONS
 
 def resolve_refinement(ref_objs,tar_objs):
     print("navigation_signatures.py -> resolve_refinement)")
+    print("got ref_objs ",ref_objs)
+    print("got tar objs ",tar_objs)
     if ref_objs!='':
         for r in ref_objs.split(','):
             if r in GOTOOBJS:

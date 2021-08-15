@@ -93,6 +93,7 @@ DEBUGGING pipeline
 
 For new rooms objects may not be identifiable in a map
 go to /ai2thor/mapper/datagen.py and follow the instructions in the end comments to generate maps and correct maps
+
 go to /ai2thor/log_instructions.py to generate list of existing instructions in the dataset
 
 

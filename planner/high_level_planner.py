@@ -12,6 +12,9 @@ from language_understanding import parse_funcs as pf
 from planner.low_level_planner import navigation_signatures as ns
 from planner.low_level_planner import manipulation_signatures as ms
 
+import planner.low_level_planner.resolve as resolve
+field_of_view = resolve.field_of_view
+
 from planner import params
 
 import json
@@ -124,7 +127,7 @@ def other_side_attempt(GRIDS,FACE_GRIDS,target_obj,ref_obj,localize_params, env)
             grid, face_grids = ns.occupancy_grid(env, targ_obj, ref_obj, localize_params)
 
         env = ns.graph_search(grid,face_grids, env, targ_obj, localize_params, other_side = 1)
-        env, event = ns.unit_refinement(env, targ_obj)
+        env = ns.unit_refinement(env, targ_obj)
 
     
     print(" ")
@@ -184,9 +187,17 @@ def run(env, sentences, intents, slot_dicts, ground_truth_map = -1, interactive 
             goalsat2 = env.get_postconditions_met() #for home computer
             #goalsat2 = env.get_goal_conditions_met() #for cluster
 
-            if intent=="navigation" and slots['action_n_navi'] in CARRY:
+            n_navi_actions = pf.fnl(slots['action_n_navi'])
+            any_carry = any([nna in CARRY for nna in n_navi_actions])
+            any_pick = any([nna in PICK for nna in n_navi_actions])
+            print("got n_navi_actions ",n_navi_actions)
+            print("got any_carry ",any_carry)
+            print("got any_pick ",any_pick)
+            #sys.exit(0)
+
+            if intent=="navigation" and any_carry:
                 intent = "n_navigation"
-            if intent=="navigation" and slots['action_n_navi'] in PICK and slots['target_obj']!='':
+            if intent=="navigation" and any_pick and slots['target_obj']!='':
                 print("There seems to be a mismatch in intent and slots !")
                 print("Analyzing whether this is navigation or manipulation -> ",sent)
                 targ_objs = naming.name_objects(slots['target_obj'],sent)
@@ -211,10 +222,14 @@ def run(env, sentences, intents, slot_dicts, ground_truth_map = -1, interactive 
                     print("Recognized target objects -> ",targ_objs, "/ ",slots['target_obj'])
                     ref_obj = naming.name_objects(slots['refinement_obj'],sent)
                     print("Recognized refinement objects -> ",ref_obj," / ",slots['refinement_obj'])
+                    ref_rel = naming.name_directions(slots['refinement_rel'])
+                    print("Recognized refinement relative -> ",ref_rel," / ",slots['refinement_rel'])
+                    tar_rel = naming.name_directions(slots['target_rel'])
+                    print("Recognized target relative -> ",tar_rel," / ",slots['target_rel'])
                     action_navi = naming.name_movements(slots['action_navi'])
                     print("Recognized navigation actions -> ",action_navi, "/ ",slots['action_navi'])
                     action_desc = naming.name_movements(slots['action_desc'])
-                    print("Recognized navigation action decs -> ",action_desc, "/ ",slots['action_desc'])
+                    print("Recognized navigation action descs -> ",action_desc, "/ ",slots['action_desc'])
                     action_int_desc = naming.intensity2digits(slots['action_intensity']) #is a flat list of words
                     print("Recognized action intensities -> ",action_int_desc, "/ ",slots['action_intensity'])
                     print(" ")
@@ -256,6 +271,14 @@ def run(env, sentences, intents, slot_dicts, ground_truth_map = -1, interactive 
                                     print("Executing move ahead ")
                                     event = env.step(dict({"action": "MoveAhead"}))
                                 inten_count+=1
+                            elif (action_navi[act_n] in WALK) and action_desc[desc_count]=='through':
+                                print("Blind instruction walk through a space")
+                                for _ in range(20):
+                                    event,col = env.check_collision("MoveAhead")
+                                    if col:
+                                        print("reached end of room")
+                                        break
+                                desc_count+=1
                             elif (action_navi[act_n] in WALK) and action_desc[desc_count] in WALK_ST: #for instructions like go forward without specifying any number of steps
                                 print("Blind instruction arbitrary walk")
                                 for _ in range(4): #lets keep the arbitrary steps to 4
@@ -357,6 +380,19 @@ def run(env, sentences, intents, slot_dicts, ground_truth_map = -1, interactive 
                             FACE_GRIDS[targ_obj] = face_grids
 
                     print(" ")
+                    print(" ")
+                    print("Executing post navigation corrections if any ")
+                    
+                    #for example telling to face opposite something
+                    field = field_of_view(env)
+                    obj_vis = any([ref_obj.split(',')[0]+'|' in a for a in list(field.keys())])
+                    if ref_rel.split(',')[0]=='opposite' and obj_vis and tar_rel.split(',')[0]=='face':
+                        print("caught object visible ",ref_obj.split(',')[0])
+                        print("caught target relative ",tar_rel.split(',')[0])
+                        print("caught instruction opposite so turning around")
+                        event = env.step(dict({"action": "RotateLeft"}))
+                        event = env.step(dict({"action": "RotateLeft"}))
+
             
             if intent=="n_navigation": 
                 print("********** In manipulation **********\n")
@@ -383,7 +419,8 @@ def run(env, sentences, intents, slot_dicts, ground_truth_map = -1, interactive 
                     ms.drawer_manipulation_remove(manip_action,target_obj,ref_rel, ref_obj, env, event)
                     print(" ")
 
-                elif manip_action=="carry": 
+                #elif manip_action=="carry": 
+                if "carry" in manip_action: 
                     targ_obj = ns.resolve_refinement(ref_obj,target_obj) 
                     try:
                         grid, face_grids = ns.occupancy_grid(env, targ_obj, ref_obj, localize_params)
@@ -394,12 +431,23 @@ def run(env, sentences, intents, slot_dicts, ground_truth_map = -1, interactive 
 
                     env = ns.graph_search(grid,face_grids, env, targ_obj, localize_params)
                     print("\n\n\n\n")
-                    env, event = ns.unit_refinement(env, targ_obj)
+                    env = ns.unit_refinement(env, targ_obj)
                     print("\n\n\n\n") #just some gap for the debuggers eye
                     
 
                     ms.carry(ref_obj,ref_rel,env)
                     print("\n\n\n\n")
+
+                if "clean" in manip_action:
+                    env = ms.clean(manip_action,target_obj,ref_rel, ref_obj, env) 
+                    print("\n\n\n\n")
+
+                    env= ms.set_default_tilt(env)
+
+
+
+
+
 
 
                 elif manip_action=='turnon': 
@@ -478,6 +526,12 @@ def run(env, sentences, intents, slot_dicts, ground_truth_map = -1, interactive 
 
                 elif manip_action=='slice': 
                     env = ms.refined_slice(manip_action,target_obj,ref_rel, ref_obj, env) 
+                    print("\n\n\n\n")
+
+                    env= ms.set_default_tilt(env)
+
+                elif manip_action=="cook" or manip_action=="cook,pick": 
+                    env = ms.cook(manip_action,target_obj,ref_rel, ref_obj, env) 
                     print("\n\n\n\n")
 
                     env= ms.set_default_tilt(env)

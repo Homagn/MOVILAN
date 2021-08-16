@@ -116,7 +116,7 @@ def drawer_manipulation_remove(manip_action,targ_obj,relative,ref_objs,env):
                 #print("found ",k1," in ",k)
                 facings[pitch[i]+'_'+yaw[2]].append(k)
     env.step(dict({"action": "LookUp"}))
-
+    #print("facings ",facings)
 
     #4
     print("Performing actions to view the target object ")
@@ -124,7 +124,7 @@ def drawer_manipulation_remove(manip_action,targ_obj,relative,ref_objs,env):
         objects = facings[o]
  
         for objs in objects:
-
+            print("in obj ",objs)
             env.step(dict({'action': act1, 'objectId': objs}))
             mask_image = env.get_segmented_image()
             depth_image = env.get_depth_image()
@@ -136,7 +136,7 @@ def drawer_manipulation_remove(manip_action,targ_obj,relative,ref_objs,env):
                     env.step(dict({'action': act2, 'objectId': k}))
                     if act3!="":
                         env.step(dict({'action': act3, 'objectId': objs}))
-                    return env,event
+                    return env
 
             for k in mf.keys():
                 if things2pick[0]+'|' in k:
@@ -409,10 +409,10 @@ def drawer_manipulation_place(manip_action,targ_obj,relative,ref_objs,env, numtr
                     print("Closing the ",objs)
                     env.step(dict({'action': act3, 'objectId': objs}))
                     env.step(dict({"action": "LookUp"}))
-                    return env,event
+                    return env
                 else:
                     env.step(dict({"action": "LookUp"}))
-                    return env,event
+                    return env
             
             env.step(dict({"action": "LookUp"}))
             print("Closing ",objs)

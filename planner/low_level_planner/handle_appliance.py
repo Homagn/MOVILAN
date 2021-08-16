@@ -8,12 +8,14 @@ sys.path.append(os.path.join(os.environ['MAIN']))
 
 import planner.low_level_planner.object_localization as object_localization
 import planner.low_level_planner.object_type as object_type
+from planner.low_level_planner import move_camera
 
 toggleables = object_type.toggleables
 location_in_fov = object_localization.location_in_fov
 
 def toggle(target_object,refinement_obj,action,env, numtries = 0):
     print("(manipulation_signatures.py -> toggle)")
+    #move_camera.set_default_tilt(env)
     print("Trying this for ",numtries," time")
     if action=="turnon":
         action='ToggleObjectOn'
@@ -46,7 +48,8 @@ def toggle(target_object,refinement_obj,action,env, numtries = 0):
 
     #pans = 3
     cpans = 0
-    for i in range(pans+1): #extra +1 to look completely down towards the floor !!!!!!!!!!!!!!!
+    env_toggle_error = False
+    for i in range(pans+2): #extra +1 to look completely down towards the floor !!!!!!!!!!!!!!!
         mask_image = env.get_segmented_image()
         depth_image = env.get_depth_image()
         lf,mf,rf,areas,_ = location_in_fov(env, mask_image, depth_image)
@@ -66,8 +69,15 @@ def toggle(target_object,refinement_obj,action,env, numtries = 0):
 
         if obj!="": #!!!!!!!!!!!
             print("Trying to ",action," ",obj)
-            env.step(dict({'action': action, 'objectId': obj, 'forceAction': True}))
-            if env.actuator_success():# and obj!="":  # !!!!!!!!!!!!!!!!!!!!!
+            #event = env.step(dict({"action": "MoveAhead"}))
+            try:
+                env.step(dict({'action': action, 'objectId': obj, 'forceAction': True}))
+                #env.step(dict({'action': action, 'objectId': obj}))
+            except:
+                print("Env returned error in toggle")
+                env_toggle_error = True
+            #env.step(dict({'action': action, 'objectId': obj}))
+            if env.actuator_success() and env_toggle_error==False:# and obj!="":  # !!!!!!!!!!!!!!!!!!!!!
                 #print("Need to restore original pan")
                 return env,False
                 '''

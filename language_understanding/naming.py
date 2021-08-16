@@ -12,7 +12,7 @@ interaction_objects = ["Pencil","Desk","Drawer","Dresser","Drawer","Watch","Cabi
                         "Stool","Television","TennisRacket","TissueBox","Window","Vase","Towel","Cloth",
                         "Chair","ArmChair","CounterTop","CreditCard","Cup","BasketBall","BaseballBat","AlarmClock",
                         "Wall","Room", "Mug",'Laptop','Beanbag','table','Box', 'Cloth', "Plate", "RemoteControl",
-                        "Sofa","CoffeeTable","Newspaper","Knife","Sink","Microwave","Apple"]
+                        "Sofa","CoffeeTable","Newspaper","Knife","Sink","Microwave","Apple","Stove","CoffeeMachine"]
 
 toggleable = ["lamp","Lamp",'light','Light','tablelamp']
 
@@ -94,8 +94,12 @@ def name_objects(obj_list,sentence): #make sense of user provided object names a
 
         if o=="tissues":
             objs = objs+"TissueBox"+','
-        if o=="counter" or o=="island" or o=="islandcounter":
+        if o=="counter" or o=="island" or o=="islandcounter" or o=="kitchenisland":
             objs = objs +"CounterTop"+','
+        if o=="coffeemaker" or o=="coffeemachine" or o=="coffee":
+            objs = objs +"CoffeeMachine"
+        if o=="stove" or o=="oven" or o=="range" or o=="Oven":
+            objs = objs +"Stove"+','
         if o=="stool" or o=="footstool":
             objs = objs+"Ottoman"+','
         if o=="bottle" or o=="Bottle" or o=="container":
@@ -214,10 +218,14 @@ def name_actions(act_list):
             objs = objs+"turnon"+','
         if o=="Carry" or o=="carry" or o=="bring": 
             objs = objs+"carry"+','
+        if o=="wash" or o=="Wash" or o=="clean": 
+            objs = objs+"clean"+','
         if o=="Look" or o=="look": 
             objs = objs+"look"+','
         if o=="slice" or o=="cut": 
             objs = objs+"slice"+','
+        if o=="cook" or o=="heat": 
+            objs = objs+"cook"+','
         else:
             #print("WARNING ! cannot find appropriate map in name_actions")
             pass
@@ -263,6 +271,8 @@ def name_directions(dir_list):
             objs = objs+"with"+','
         if o=="On" or o=="on": 
             objs = objs+"on"+','
+        if o=="opposite" or o=="Opposite": 
+            objs = objs+"opposite"+','
         if o=="At" or o=="at": 
             objs = objs+"at"+','
         if o=="Next" or o=="next": 
@@ -324,16 +334,18 @@ def name_movements(move_list):
 
     objs = ""
     for o in o_list:
-        if o=="turn" or o=="Turn":
+        if o=="turn" or o=="Turn" or o=="turning" or o=="Turning":
             objs = objs+"turn"+','
         if o=="go" or o=="Go":
             objs = objs+"go"+','
         if o=="forward" or o=="Forward" or o=='straight' or o=='Straight':
             objs = objs+"forward"+','
-        if o=="Walk" or o=="walk":
+        if o=="Walk" or o=="walk" or o=="walking" or o=="Walking":
             objs = objs+"walk"+','
         if o=="Take" or o=="take":
             objs = objs+"take"+','
+        if o=="through":
+            objs = objs+"through"+','
         if o=="Move" or o=="move" or o=="veer":
             objs = objs+"move"+','
 

@@ -18,7 +18,7 @@ def carry(refinement_obj,refinement_rel,env):
     ref_rel = refinement_rel.split(',')
 
     for r in range(len(ref_obj)):
-        env,event = unit_refinement(env,event,ref_obj[r])
+        env = unit_refinement(env,ref_obj[r])
         try:
             d = ref_rel[r]
             if d=="left":

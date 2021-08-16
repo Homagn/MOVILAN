@@ -431,6 +431,11 @@ if __name__ == '__main__':
                 event = env.step(dict({"action": "LookDown"}))
             if c==ord('b'):
                 break
+            if c==ord('v'):
+                act = input("Enter the action ")
+                objid = input("Enter the object_id ")
+                event = env.step(dict({"action": act, "objectId": objid}))
+                
             
 
             live_map(env)

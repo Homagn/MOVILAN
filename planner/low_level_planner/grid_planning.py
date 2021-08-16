@@ -5,7 +5,7 @@ import sys
 import os
 os.environ['MAIN'] = '/ai2thor'
 sys.path.append(os.path.join(os.environ['MAIN']))
-
+from language_understanding import equivalent_concepts as eqc
 
 from mapper import test_gcn
 from mapper import projection as proj
@@ -15,6 +15,8 @@ from mapper import params as mparams
 from planner.low_level_planner import move_camera
 import sys
 
+
+GOTOOBJS = eqc.GOTOOBJS
 #add a new parameter to the function called box_area/box_num
 #if earlier occupancy_grid was called to search for an object
 #and now we are simply trying to go to the other side of that object (already did target refinement for multiple targets)
@@ -76,20 +78,30 @@ def occupancy_grid(env, target_object, ref_object, localize_params, hallucinate 
                 #and the various center to center distances to the bounding boxes of the multiple target objects
                 #then pick the target object as the one with the minimum c2c distance
                 print("Number of regionprops>1, trying to refine target based on refinement object ")
-                gridsize = mparams.grid_size
-                panorama = pan.rotation_image(env, objects_to_visit = [], debug = False) #gets a panorama image of everything thats visible
-                move_camera.set_default_tilt(env)
-                camera_proj = proj.bevmap(panorama,grid_size = gridsize, debug = False)
+                
+                if ref_object in GOTOOBJS: #means no need to use approximate technique
+                    nav_map_ref = test_gcn.estimate_map(ref_object,localize_params = localize_params)
+                    move_camera.set_default_tilt(env)
 
-                nav_map_r = proj.input_navigation_map(camera_proj, ref_object, grid_size = mparams.grid_size, 
-                                                    unk_id = mparams.semantic_classes['unk'],
-                                                    flr_id = mparams.semantic_classes['flr'], 
-                                                    tar_id = mparams.semantic_classes['tar'], 
-                                                    obs_id = mparams.semantic_classes['obs'])
-                #nav_map is an array of params.grid_size x params.grid_size x 4 (4 classes unk,flr,tar and obs)| contains values between 0 and 1
-                print("approximate map of the refinement object ",ref_object)
-                nav_map_ref = np.argmax(nav_map_r, axis=2)
+                else: #object was too small to map, need to use approximate technique
+                    gridsize = mparams.grid_size
+                    panorama = pan.rotation_image(env, objects_to_visit = [], debug = False) #gets a panorama image of everything thats visible
+                    move_camera.set_default_tilt(env)
+                    camera_proj = proj.bevmap(panorama,grid_size = gridsize, debug = False)
+
+                    nav_map_r = proj.input_navigation_map(camera_proj, ref_object, grid_size = mparams.grid_size, 
+                                                        unk_id = mparams.semantic_classes['unk'],
+                                                        flr_id = mparams.semantic_classes['flr'], 
+                                                        tar_id = mparams.semantic_classes['tar'], 
+                                                        obs_id = mparams.semantic_classes['obs'])
+                    #nav_map is an array of params.grid_size x params.grid_size x 4 (4 classes unk,flr,tar and obs)| contains values between 0 and 1
+                    print("approximate map of the refinement object ",ref_object)
+                    nav_map_ref = np.argmax(nav_map_r, axis=2)
+
+
+
                 #proj.starviz(nav_map_ref)
+                #sys.exit(0)
                 search_grid_ref = np.where(nav_map_ref==mparams.semantic_classes['tar'],nav_map_ref,0) #only places where target object is mapped is nonzero
                 props_ref = regionprops(label(np.asarray(search_grid_ref,dtype = np.int)))
                 ref_box = props_ref[0]

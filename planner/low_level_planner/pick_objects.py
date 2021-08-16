@@ -246,7 +246,7 @@ def refined_pick(manip_action,targ_obj,refinement_rel,refinement_obj,env, numtri
                 env.step(dict({'action': act1, 'objectId': minkey}))
                 if check_pick(env):
                     env = set_default_tilt(env)
-                    return env, event
+                    return env
                 env.step(dict({"action": "LookDown"}))
 
             env.step(dict({"action": "LookUp"}))
